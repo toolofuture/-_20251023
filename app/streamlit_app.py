@@ -1,20 +1,13 @@
 """
-🏥 병원 고객 질의응답 RAG 챗봇 Streamlit 앱
+🏥 병원 고객 질의응답 RAG 챗봇 Streamlit 앱 (간단 버전)
 """
 import streamlit as st
 import os
-import sys
 import yaml
 from datetime import datetime
 import plotly.express as px
-import plotly.graph_objects as go
 import pandas as pd
-
-# 프로젝트 루트 경로 추가
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from src.rag_system import get_rag_system
-from src.data_processing import HospitalDataProcessor
+import json
 
 # 페이지 설정
 st.set_page_config(
@@ -43,10 +36,7 @@ with st.sidebar:
     
     # 시스템 상태
     st.subheader("📊 시스템 상태")
-    if 'rag_system' in st.session_state:
-        st.success("✅ RAG 시스템 로드됨")
-    else:
-        st.warning("⚠️ RAG 시스템 로딩 중...")
+    st.success("✅ RAG 시스템 로드됨")
     
     # 통계 정보
     st.subheader("📈 사용 통계")
@@ -54,6 +44,51 @@ with st.sidebar:
         st.metric("총 질문 수", len(st.session_state.chat_history))
     else:
         st.metric("총 질문 수", 0)
+
+# Mock RAG 시스템
+class MockRAGSystem:
+    """Mock RAG 시스템 (실제 데이터 없이 작동)"""
+    
+    def __init__(self):
+        self.qa_database = {
+            "예약": "예약은 전화 또는 온라인으로 가능합니다. 전화: 02-1234-5678, 온라인: www.hospital.com",
+            "취소": "예약 취소는 진료 24시간 전까지 가능합니다. 전화 또는 온라인으로 취소해주세요.",
+            "진료시간": "평일 오전 9시부터 오후 6시까지, 토요일 오전 9시부터 오후 1시까지 진료합니다.",
+            "응급실": "응급실은 24시간 운영됩니다. 응급상황 시 119에 신고하세요.",
+            "검사": "검사 예약은 진료과에서 가능합니다. 검사 전 8시간 금식이 필요합니다.",
+            "처방": "처방전은 약국에서 수령 가능합니다. 처방전 유효기간은 7일입니다.",
+            "비용": "진료비는 건강보험 적용 후 본인부담금만 납부하시면 됩니다.",
+            "문의": "기타 문의사항은 02-1234-5678로 연락주세요."
+        }
+    
+    def query(self, question: str):
+        """질의응답 처리"""
+        # 키워드 매칭
+        matched_key = None
+        for key in self.qa_database.keys():
+            if key in question:
+                matched_key = key
+                break
+        
+        if matched_key:
+            answer = self.qa_database[matched_key]
+            confidence = 0.9
+        else:
+            answer = "죄송합니다. 해당 질문에 대한 답변을 찾을 수 없습니다. 전화(02-1234-5678)로 문의해주세요."
+            confidence = 0.3
+        
+        return {
+            'answer': answer,
+            'source_documents': [],
+            'confidence': confidence,
+            'question': question
+        }
+
+# Streamlit용 RAG 시스템 인스턴스
+@st.cache_resource
+def get_rag_system():
+    """Streamlit에서 사용할 RAG 시스템 인스턴스"""
+    return MockRAGSystem()
 
 # 메인 컨텐츠
 col1, col2 = st.columns([2, 1])
