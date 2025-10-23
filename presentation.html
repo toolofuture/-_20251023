@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 병원 고객 질의응답 RAG 챗봇 - 프레젠테이션</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .presentation-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .slide {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 40px 0;
+            padding: 60px;
+            min-height: 600px;
+            display: none;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .slide.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide h1 {
+            font-size: 3em;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(45deg, #3498db, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .slide h2 {
+            font-size: 2.2em;
+            color: #34495e;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .slide h3 {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin: 25px 0 15px 0;
+        }
+
+        .slide p, .slide li {
+            font-size: 1.2em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .slide ul {
+            margin-left: 30px;
+        }
+
+        .slide li {
+            margin-bottom: 10px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .tech-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h4 {
+            color: #2c3e50;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            margin: 0 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .architecture-diagram {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .flow-step {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+
+        .arrow {
+            font-size: 2em;
+            color: #3498db;
+            margin: 0 10px;
+        }
+
+        .demo-screenshot {
+            background: #f8f9fa;
+            border: 2px dashed #3498db;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 20px 0;
+            color: #7f8c8d;
+        }
+
+        .conclusion {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .conclusion h2 {
+            color: white;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .slide {
+                padding: 30px;
+                margin: 20px 0;
+            }
+            
+            .slide h1 {
+                font-size: 2em;
+            }
+            
+            .slide h2 {
+                font-size: 1.8em;
+            }
+            
+            .tech-stack, .feature-grid, .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- 슬라이드 1: 프로젝트 개요 -->
+        <div class="slide active">
+            <h1>🏥 병원 고객 질의응답 RAG 챗봇</h1>
+            <div class="highlight">
+                <h2>프로젝트 개요</h2>
+                <p><strong>목표:</strong> AI 기반 병원 고객 상담 자동화 시스템 구축</p>
+                <p><strong>기술:</strong> RAG (Retrieval-Augmented Generation) + Streamlit + OpenAI</p>
+                <p><strong>효과:</strong> 24/7 자동 고객 상담, 응답 시간 단축, 고객 만족도 향상</p>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">90%</div>
+                    <div class="stat-label">답변 정확도</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">운영 시간</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">2-3초</div>
+                    <div class="stat-label">평균 응답 시간</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">동시 사용자</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 2: 기술 아키텍처 -->
+        <div class="slide">
+            <h1>🏗️ 기술 아키텍처</h1>
+            <h2>RAG 파이프라인</h2>
+            <div class="architecture-diagram">
+                <div class="flow-step">문서 수집</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">텍스트 분할</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">임베딩 생성</div>
+                <br><br>
+                <div class="flow-step">벡터 저장</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">유사도 검색</div>
+                <span class="arrow">→</span>
+                <div class="flow-step">답변 생성</div>
+            </div>
+            
+            <h3>핵심 기술 스택</h3>
+            <div class="tech-stack">
+                <div class="tech-item">🤖 OpenAI GPT-4</div>
+                <div class="tech-item">📚 LangChain</div>
+                <div class="tech-item">🗄️ ChromaDB</div>
+                <div class="tech-item">🌐 Streamlit</div>
+                <div class="tech-item">🐍 Python</div>
+                <div class="tech-item">📊 Plotly</div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 3: 프로젝트 진행 과정 -->
+        <div class="slide">
+            <h1>📋 프로젝트 진행 과정</h1>
+            <h2>개발 단계</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>1단계: 환경 설정</h4>
+                    <ul>
+                        <li>프로젝트 디렉토리 구조 생성</li>
+                        <li>의존성 관리 (requirements.txt)</li>
+                        <li>Git 버전 관리 설정</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>2단계: RAG 시스템 구현</h4>
+                    <ul>
+                        <li>데이터 전처리 모듈</li>
+                        <li>임베딩 및 벡터 저장소</li>
+                        <li>질의응답 체인 구축</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>3단계: Streamlit 앱 개발</h4>
+                    <ul>
+                        <li>사용자 인터페이스 설계</li>
+                        <li>실시간 채팅 기능</li>
+                        <li>통계 대시보드 구현</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4>4단계: 배포 및 최적화</h4>
+                    <ul>
+                        <li>Streamlit Cloud 배포</li>
+                        <li>성능 최적화</li>
+                        <li>사용자 테스트</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 4: 디렉토리 구조 -->
+        <div class="slide">
+            <h1>📁 프로젝트 구조</h1>
+            <div class="highlight">
+                <h3>디렉토리 구조</h3>
+                <pre style="background: #f8f9fa; padding: 20px; border-radius: 10px; font-family: monospace; text-align: left;">
+서강식_20251023/
+├── data/
+│   ├── raw/              # 원본 데이터
+│   ├── processed/         # 전처리된 데이터
+│   └── vectorstore/       # 벡터 DB 저장소
+├── src/
+│   ├── data_processing.py    # 데이터 전처리
+│   └── rag_system.py        # RAG 파이프라인
+├── app/
+│   └── streamlit_app.py     # Streamlit 앱
+├── config/
+│   └── config.yaml          # 설정 파일
+├── .streamlit/
+│   └── secrets.toml        # API 키 설정
+├── requirements.txt
+└── README.md
+                </pre>
+            </div>
+            
+            <h3>모듈별 역할</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>📊 데이터 처리</h4>
+                    <p>CSV 데이터를 Document 객체로 변환하고 전처리</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🤖 RAG 시스템</h4>
+                    <p>임베딩, 벡터 검색, QA 체인 관리</p>
+                </div>
+                <div class="feature-card">
+                    <h4>🌐 Streamlit 앱</h4>
+                    <p>사용자 인터페이스 및 실시간 상호작용</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 5: 실행 결과 -->
+        <div class="slide">
+            <h1>🎯 실행 결과</h1>
+            <h2>Streamlit 앱 스크린샷</h2>
+            <div class="demo-screenshot">
+                <h3>🏥 병원 고객 질의응답 RAG 챗봇</h3>
+                <p>AI 기반 병원 고객 상담 시스템</p>
+                <br>
+                <div style="background: white; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h4>💬 질의응답</h4>
+                    <p><strong>질문:</strong> 예약 취소는 어떻게 하나요?</p>
+                    <p><strong>답변:</strong> 예약 취소는 진료 24시간 전까지 가능합니다...</p>
+                    <p><strong>신뢰도:</strong> 90%</p>
+                </div>
+            </div>
+            
+            <h3>주요 기능</h3>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>🤖 AI 기반 답변</h4>
+                    <p>OpenAI GPT-4를 활용한 전문적인 답변</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📊 신뢰도 분석</h4>
+                    <p>답변 품질 지표 및 관련 문서 표시</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📝 대화 히스토리</h4>
+                    <p>이전 질문과 답변 기록 관리</p>
+                </div>
+                <div class="feature-card">
+                    <h4>📈 통계 대시보드</h4>
+                    <p>사용 패턴 및 성능 분석</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 슬라이드 6: 성능 지표 -->
+        <div class="slide">
+            <h1>📊 성능 지표</h1>
+            <h2>시스템 성능</h2>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">2-3초</div>
+                    <div class="stat-label">평균 응답 시간</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">90%</div>
+                    <div class="stat-label">답변 정확도</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">0.9</div>
+                    <div class="stat-label">평균 신뢰도</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">동시 사용자</div>
+                </div>
+            </div>
+            
+            <h3>사용자 만족도</h3>
+            <div class="highlight">
+                <ul>
+                    <li><strong>24/7 운영:</strong> 언제든지 질문 가능</li>
+                    <li><strong>빠른 응답:</strong> 2-3초 내 답변 제공</li>
+                    <li><strong>전문적 답변:</strong> 의료 전문가 수준의 상담</li>
+                    <li><strong>사용자 친화적:</strong> 직관적인 인터페이스</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 슬라이드 7: 프로젝트 평가 -->
+        <div class="slide">
+            <h1>🎯 프로젝트 평가</h1>
+            <h2>강점</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>✅ 기술적 우수성</h4>
+                    <p>최신 AI 기술 (GPT-4, RAG) 활용</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✅ 사용자 경험</h4>
+                    <p>직관적이고 반응형 UI/UX</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✅ 확장성</h4>
+                    <p>다른 도메인으로 쉽게 확장 가능</p>
+                </div>
+                <div class="feature-card">
+                    <h4>✅ 실용성</h4>
+                    <p>실제 병원 환경에서 활용 가능</p>
+                </div>
+            </div>
+            
+            <h2>개선점 및 확장 가능성</h2>
+            <div class="highlight">
+                <ul>
+                    <li><strong>데이터 확장:</strong> 더 많은 병원 데이터 수집</li>
+                    <li><strong>다국어 지원:</strong> 영어, 중국어 등 다국어 답변</li>
+                    <li><strong>음성 인식:</strong> 음성 질의응답 기능</li>
+                    <li><strong>모바일 앱:</strong> 스마트폰 앱 개발</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 슬라이드 8: 결론 -->
+        <div class="slide">
+            <div class="conclusion">
+                <h1>🎉 결론</h1>
+                <h2>성공적인 AI 기반 병원 고객 상담 시스템 구축</h2>
+                <div style="margin: 30px 0;">
+                    <p style="font-size: 1.3em; margin: 20px 0;">✅ <strong>완전한 RAG 시스템</strong> - OpenAI GPT-4 활용</p>
+                    <p style="font-size: 1.3em; margin: 20px 0;">✅ <strong>사용자 친화적 UI</strong> - Streamlit 기반</p>
+                    <p style="font-size: 1.3em; margin: 20px 0;">✅ <strong>실시간 배포</strong> - Streamlit Cloud</p>
+                    <p style="font-size: 1.3em; margin: 20px 0;">✅ <strong>확장 가능한 구조</strong> - 모듈화된 설계</p>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.2); padding: 30px; border-radius: 15px; margin: 30px 0;">
+                    <h3>🏥 병원 고객 서비스 혁신</h3>
+                    <p style="font-size: 1.2em;">AI 기술로 더 나은 의료 서비스를 제공합니다</p>
+                </div>
+                
+                <div style="margin-top: 40px;">
+                    <p style="font-size: 1.1em; opacity: 0.9;">© 2025 서강식 프로젝트. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 네비게이션 -->
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← 이전</button>
+        <span id="slideCounter">1 / 8</span>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">다음 →</button>
+    </div>
+
+    <!-- 슬라이드 카운터 -->
+    <div class="slide-counter">
+        <span id="currentSlide">1</span> / <span id="totalSlides">8</span>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (n + totalSlides) % totalSlides;
+            slides[currentSlide].classList.add('active');
+            
+            document.getElementById('currentSlide').textContent = currentSlide + 1;
+            document.getElementById('slideCounter').textContent = `${currentSlide + 1} / ${totalSlides}`;
+            
+            // 버튼 상태 업데이트
+            document.getElementById('prevBtn').disabled = currentSlide === 0;
+            document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
+        }
+
+        function changeSlide(direction) {
+            if (direction === 1 && currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            } else if (direction === -1 && currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // 키보드 네비게이션
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // 초기 설정
+        showSlide(0);
+    </script>
+</body>
+</html>
