@@ -1,0 +1,27 @@
+# 병원 고객 질의응답 RAG 시스템 설정
+
+# 데이터 설정
+data:
+  train_path: "data/raw/병원_train.csv"
+  validation_path: "data/raw/병원_validation.csv"
+  processed_path: "data/processed/"
+  vectorstore_path: "data/vectorstore/"
+
+# 모델 설정
+model:
+  embedding_model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+  llm_model: "gpt-4o"
+  chunk_size: 1000
+  chunk_overlap: 200
+
+# RAG 설정
+rag:
+  top_k: 5
+  similarity_threshold: 0.7
+  max_tokens: 1000
+
+# Streamlit 설정
+streamlit:
+  page_title: "🏥 병원 고객 질의응답 RAG 챗봇"
+  page_icon: "🏥"
+  layout: "wide"
